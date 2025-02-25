@@ -1,0 +1,184 @@
+---
+title: "Class 10: Structural Bioinformatics Analysis Pt. 1"
+author: "Snehita Vallumchetla (PID: A16853399)"
+format: pdf
+toc: true
+---
+
+## 1. The PDB  database
+
+The main repository of biomolecular structure data is called the PDB found at: http://www.rcsb.org/
+
+Let's see what this database contains. I went to PDB > Analyze > PDB Statistics > By Exp method and molecular type. 
+
+#### First let's clean the data: 
+
+```{r}
+pdbstats <- read.csv('data.csv')
+
+pdbstats
+```
+
+```{r}
+pdbstats$X.ray
+```
+
+The comma in these numbers is causing them to be read as characters rather than numeric. 
+
+I can fix this by replacing "," with the `sub()` function. 
+
+```{r}
+x <- pdbstats$X.ray
+sum(as.numeric(sub(",", "", x)))
+```
+
+Or I can use the **readr** package and the `read_csv()` function. 
+
+```{r}
+library(readr)
+
+pdbstats <- read_csv('data.csv')
+
+pdbstats
+```
+
+I want to clean the column names so they are all lower case
+
+```{r}
+library(janitor)
+
+df <- clean_names(pdbstats)
+
+df
+```
+
+>Q1: What percentage of structures in the PDB are solved by X-Ray and Electron Microscopy.
+
+```{r}
+sum(df$x_ray)
+```
+
+total number of structures
+```{r}
+sum(df$total)
+```
+
+Percentage of the X-ray Structures: 
+
+```{r}
+xray_percent <- (sum(df$x_ray)/sum(df$total))*100
+
+xray_percent
+```
+
+Percentage of Electron Microscopy
+
+```{r}
+em_percent <- (sum(df$em)/sum(df$total))*100
+
+em_percent
+```
+
+82.8% of the structures are solved through X-ray while 10.75% are solved by Electron Microscopy. 
+
+>Q2: What proportion of structures in the PDB are protein?
+
+```{r}
+sum(df[1,'total'])/sum(df$total)
+```
+
+
+>Q3: Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
+
+There are 2,298 HIV 1 protease structures in the current PDB. https://molstar.org/viewer/
+
+
+## 2. Using Mol*
+
+The main Mol* homepage at: 
+We can input our own PDB files or just give it a PDB database accession code (4 letter PDB code)
+
+![Molecular View of 1HSG](1HSG.png)
+
+>Q4: Water molecules normally have 3 atoms. Why do we see just one atom per water molecule in this structure?
+
+We see one atom per water molecule because it allows for better visualization of the protein target of interest, and simplifies the overall structure. 
+
+>Q5: There is a critical “conserved” water molecule in the binding site. Can you identify this water molecule? What residue number does this water molecule have
+
+The conserved water molecule in this binding site is water-308
+
+![View of the the binding pocket with the Ligand](bindingpocket.png)
+
+![Interaction of water 308 and the Ligand](water308.png)
+
+>Q6: Generate and save a figure clearly showing the two distinct chains of HIV-protease along with the ligand. You might also consider showing the catalytic residues ASP 25 in each chain and the critical water (we recommend “Ball & Stick” for these side-chains). Add this figure to your Quarto document.
+
+![The important ASP 25 labeled on chain A and chain B](dresidue.png)
+
+## 3. Introduction to Bio 3D in R 
+
+We can use the **bio3d** package for structural bioinformatics to read PDB data into R. 
+
+```{r}
+library(bio3d)
+
+pdb <- read.pdb("1hsg")
+
+pdb
+```
+
+>Q7: How many amino acid residues are there in this pdb object? 
+
+There are 198 amino acid residues in this pdb object
+
+```{r}
+length(pdbseq(pdb))
+```
+
+
+>Q8: Name one of the two non-protein residues? 
+
+MK1
+
+>Q9: How many protein chains are in this structure? 
+
+There are two chains (A and B)
+
+```{r}
+head(pdb$atom)
+```
+
+Let's try a new function not yet in the bio3d package. It requires the **r3dmol** package that we need to install along with **shiny**
+
+```{r}
+source("https://tinyurl.com/viewpdb")
+#view.pdb(pdb, backgroundColor = 'pink')
+```
+
+## 4. Predicting functional dynamics
+
+We can use the `nma()` function in bio3d to predict the large-scale functional motions of biomolecules. 
+
+```{r}
+adk <- read.pdb("6s36")
+
+adk
+```
+
+```{r}
+m <- nma(adk)
+plot(m)
+```
+
+Write out a trajectory of the predicted molecular motion:
+```{r}
+mktrj(m, file="adk_m7.pdb")
+```
+
+![predicted motion of protein](ADK_M7.PDB.png)
+
+
+
+
+

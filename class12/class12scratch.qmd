@@ -1,0 +1,15 @@
+---
+title: "Class 12: Genomics Lab"
+author: "Snehita Vallumchetla (PID: A16853399)"
+format: html
+---
+
+> Q5. What proportion of the Mexican Ancestry in Los Angeles sample population (MXL) are
+homozygous for the asthma associated SNP (G|G)?
+
+```{r}
+MXL <- read.csv('MXLdata.csv')
+
+table(MXL$Genotype..forward.strand.)
+```
+

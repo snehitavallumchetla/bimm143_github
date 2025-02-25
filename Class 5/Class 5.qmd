@@ -1,0 +1,178 @@
+---
+title: "Class 5: Data Visualization with ggplot"
+author: "Snehita Vallumchetla (PID A16853399)"
+format: html
+---
+
+## Background
+
+> Q1.  Which plot types are typically NOT used to compare distributions of numeric variables? 
+
+Network graph
+
+> Q2. Which statement about data visualization with ggplot2 is incorrect?
+
+ggplot is the only way to create plots in R
+
+## Intro to ggplot 
+
+There are many graphics system in R (ways to make plots and figures). These include "base" R plots. Today we will focus mostly on the **ggplot2** package. 
+
+Let's start with a plot of a simple in-built dataset called `cars`. 
+
+```{r}
+cars
+```
+
+
+```{r}
+plot(cars)
+```
+
+Let's see how we can make this figure using **ggplot2**. First I need to install this package on my computer. To install any R package I use the function `install.packages()`
+
+> I will run `install.packages("ggplot2") in my R console not this quatro document!
+
+Before I can use any functions from add on packages I need to load the package from my "library()" with the `library(ggplot2)` call. 
+
+```{r}
+library(ggplot2)
+ggplot(data = cars)
+```
+All ggplot figures have at least 3 things (called layers). These include:
+
+* **data** (the input dataset I want to plot from)
+* **aes** (the aesthetic mapping of the data to my plot)
+* **geom** (the geom_point(), geom_line(), etc)
+
+
+```{r}
+ggplot(cars) + 
+  aes(x = speed, y = dist) + 
+  geom_point()
+```
+
+>Q3. Which geometric layer should be used to create scatter plots in ggplot2?
+
+geom_point()
+
+>Q4. In your own RStudio can you add a trend line layer to help show the relationship between the plot variables with the geom_smooth() function?
+
+>Q5. Argue with geom_smooth() to add a straight line from a linear model without the shaded standard error region? 
+
+Yes, using geom_smooth(method = "lm")
+
+Let's add a line to show the relationship here:
+
+```{r}
+ggplot(cars) + 
+  aes(x = speed, y = dist) + 
+  geom_point() + 
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  labs(title = "My first GGPLOT")
+```
+> Q6. Which geometric layer should be used to create scatter plots in ggplot2? 
+
+geom_point()
+
+## Gene expresison figure
+
+the code to read the data set
+```{r}
+url <- "https://bioboot.github.io/bimm143_S20/class-material/up_down_expression.txt"
+genes <- read.delim(url)
+head(genes)
+```
+
+> Q7. How many genes are in this dataset? 
+
+```{r}
+nrow(genes)
+```
+There are 5196 genes in this dataset. 
+
+> Q8. Use the colnames() function and the ncol() function on the genes data frame to find out what the column names are (we will need these later) and how many columns there are. How many columns did you find?
+
+```{r}
+colnames(genes)
+```
+
+```{r}
+ncol(genes)
+```
+
+There are **4 columns** in this dataset with the names `Gene`, `Condition1`, `Condition2`, and `State`
+
+> Q9. Use the table() function on the State column of this data.frame to find out how many ‘up’ regulated genes there are. What is your answer?
+
+```{r}
+table(genes$State)
+```
+
+There are **127** upregulated genes in this dataset
+
+
+
+> Q10. Using your values above and 2 significant figures. What fraction of total genes is up-regulated in this dataset?
+
+```{r}
+round( table(genes$State)/nrow(genes) * 100, 2 )
+```
+
+The fraction of total genes that is upregulated is **2.44**. 
+
+
+A final plot with all of the elements (layers): 
+
+```{r}
+ggplot(genes) +
+  aes(x = Condition1, y = Condition2, col = State) +
+  geom_point() + 
+  theme_bw() +
+  labs(title = "Gene Expression Changes Upon Drug Treatment",
+       x = "Control (no drug)", 
+       y = "Drug Treatment",
+       subtitle = "Just another scatter plot made with ggplot") +
+  scale_colour_manual(values = c("blue", "grey", "red"))
+```
+
+## Gapminder Data Set
+
+```{r}
+#read in the file of interest
+
+url <- "https://raw.githubusercontent.com/jennybc/gapminder/master/inst/extdata/gapminder.tsv"
+
+gapminder <- read.delim(url)
+```
+
+```{r}
+# install necessary packages
+
+install.packages("dplyr")
+library(dplyr)
+```
+Create a new dataset which filters data for the year 2007
+```{r}
+gapminder_2007 <- gapminder %>% filter(year==2007)
+```
+
+
+Create a plot of the 2007 data
+```{r}
+ggplot(gapminder_2007) + 
+  aes(x = gdpPercap, y = lifeExp, color = continent, size = pop) +
+  geom_point(alpha = 0.5) 
+```
+
+Side by side figure
+```{r}
+gapminder_1997 <- gapminder %>% filter(year == 1997)
+
+ggplot(gapminder_1997) +
+  aes(x = gdpPercap, y = lifeExp, color=continent,size = pop) +
+  geom_point(alpha = 0.5) + 
+  scale_size_area(max_size = 10) 
+```
+

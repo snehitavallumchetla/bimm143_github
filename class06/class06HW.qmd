@@ -1,0 +1,26 @@
+---
+title: "Class 6 HW"
+author: "Snehita Vallumchetla (PID: A16853399)"
+format: pdf
+---
+
+I simplified the code because I noticed that a lot of the steps being done were redundant and could be simplified using a function! Below I made a plot kinase function that takes an input and outputs a plot. 
+
+```{r}
+library(bio3d)
+
+plot_kinase <- function(input){
+  output <- read.pdb(input)
+  output.chainA <- trim.pdb(output, chain="A", elety="CA")
+  output.B <- output.chainA$atom$b
+  plotb3(output.B, sse = output.chainA, typ = "l", ylab = "Bfactor")
+}
+```
+
+I used the `sapply()` function over the 3 genes of interest in order to apply the `plot_kinase()` function for these 3 genes. 
+
+```{r}
+sapply(c("4AKE","1AKE", "1E4Y"), FUN = plot_kinase)
+```
+
+

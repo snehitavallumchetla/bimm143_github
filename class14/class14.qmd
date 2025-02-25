@@ -1,0 +1,270 @@
+---
+title: "Class 14: RNA-seq analysis mini-project"
+author: "Snehita Vallumchetla (PID: A16853399)"
+format: pdf
+toc: TRUE
+---
+
+## Background:
+
+The data for for hands-on session comes from GEO entry: GSE37704, which is associated with the following publication:
+
+* Trapnell C, Hendrickson DG, Sauvageau M, Goff L et al. "Differential analysis of gene regulation at transcript resolution with RNA-seq". Nat Biotechnol 2013 Jan;31(1):46-53. PMID: 23222703
+
+The authors report on differential analysis of lung fibroblasts in response to loss of the developmental transcription factor HOXA1. Their results and others indicate that HOXA1 is required for lung fibroblast and HeLa cell cycle progression. In particular their analysis show that "loss of HOXA1 results in significant expression level changes in thousands of individual transcripts, along with isoform switching events in key regulators of the cell cycle". For our session we have used their Sailfish gene-level estimated counts and hence are restricted to protein-coding genes only.
+
+## Data Import:
+
+Load our files:
+```{r}
+counts <- read.csv('GSE37704_featurecounts.csv', row.names = 1)
+colData <- read.csv('GSE37704_metadata.csv')
+```
+
+## Inspect and tidy data:
+
+>Q. Complete the code below to remove the troublesome first column from countData. Does the `counts` column match with the `colData` rows? 
+
+```{r}
+head(counts)
+```
+```{r}
+head(colData)
+```
+
+Since it does not match we need to transform the data frame so that they align, since there is an extra `length` column in the counts data, which needs to be removed. 
+
+```{r}
+colnames(counts)
+```
+
+
+```{r}
+countData <- counts[,-1]
+head(countData)
+```
+
+Check for matching countData and colData:
+```{r}
+colnames(countData) == colData$id
+```
+
+
+>Q1. How many genes in total? 
+
+19808 genes total in our dataset
+
+```{r}
+nrow(countData)
+```
+
+>Q2. Filter to remove zero count genes (rows where there are zero counts in all columns). How many genes are left? 
+
+There are 15975 genes that are not zero count genes, within this data set. 
+
+```{r}
+to.keep.inds <- rowSums(countData) > 0 
+```
+
+```{r}
+new.counts <- countData[to.keep.inds,]
+```
+
+```{r}
+nrow(new.counts)
+```
+
+## Setup for DESeq:
+
+```{r}
+#| message: true
+library(DESeq2)
+```
+
+
+Setup input objects for DESeq:
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = new.counts, 
+                              colData = colData,
+                              design = ~condition)
+```
+
+## Run DESeq:
+
+```{r}
+dds <- DESeq(dds)
+res <- results(dds)
+```
+```{r}
+head(res)
+```
+>Q3. Call the summary() function on your results to get a sense of how many genes are up or down-regulated at the default 0.1 p-value cutoff.
+
+```{r}
+summary(res)
+```
+
+## Volcano plot of results:
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+mycols <- rep('gray', nrow(res))
+mycols[ abs(res$log2FoldChange) > 2 ]  <- "magenta" 
+
+inds <- (res$padj < 0.01) & (abs(res$log2FoldChange) > 2 )
+mycols[ inds ] <- "turquoise"
+```
+
+
+```{r}
+ggplot(res) + 
+  aes(res$log2FoldChange, -log(res$padj)) +
+  geom_point(col = mycols, alpha = 0.5) +
+  geom_vline(xintercept = c(-2,2), linetype = 'dashed', color = 'black') + 
+  geom_hline(yintercept = 0.01, linetype = 'dashed', color = 'black') 
+
+```
+
+## Gene annotation: 
+
+```{r}
+library(AnnotationDbi)
+library(org.Hs.eg.db)
+```
+
+```{r}
+columns(org.Hs.eg.db)
+```
+>Q4. Use the mapIDs() function multiple times to add SYMBOL, ENTREZID and GENENAME annotation to our results by completing the code below.
+
+Add gene SYMBOL, GENENAME, and ENTREZID:
+```{r}
+res$symbol <- mapIds(org.Hs.eg.db,
+       keys = rownames(res),
+       keytype = 'ENSEMBL',
+       column = 'SYMBOL')
+
+res$genename <- mapIds(org.Hs.eg.db,
+       keys = rownames(res),
+       keytype = 'ENSEMBL',
+       column = 'GENENAME')
+
+res$entrez <- mapIds(org.Hs.eg.db,
+       keys = rownames(res),
+       keytype = 'ENSEMBL',
+       column = 'ENTREZID')
+```
+
+```{r}
+head(res)
+```
+
+>Q5. Finally for this section let's reorder these results by adjusted p-value and save them to a CSV file in your current project directory.
+
+```{r}
+res = res[order(res$pvalue),]
+write.csv(res, file = "deseq_results.csv")
+```
+
+## Pathway analysis: 
+
+```{r}
+library(gage)
+library(gageData)
+library(pathview)
+```
+
+Load up the kegg gene sets:
+```{r}
+data(kegg.sets.hs)
+```
+
+```{r}
+head(kegg.sets.hs, 2)
+```
+```{r}
+foldchanges <- res$log2FoldChange
+names(foldchanges) <- res$entrez
+```
+
+```{r}
+keggres <- gage(foldchanges, gsets = kegg.sets.hs)
+```
+
+```{r}
+head(keggres$less)
+```
+
+Cell cycle figure: 
+```{r}
+pathview(foldchanges, pathway.id = 'hsa04110')
+```
+
+Insert this figure in my report
+
+![](hsa04110.pathview.png)
+
+We can look at the top 5 upregulated genes: 
+```{r}
+keggrespathways <- rownames(keggres$greater)[1:5]
+
+
+keggresids = substr(keggrespathways, start=1, stop=8)
+
+keggresids
+```
+
+```{r}
+pathview(gene.data = foldchanges, pathway.id = keggresids, species = "hsa")
+```
+
+Below are illustrations of the top 5 upregulated genes: 
+
+![](hsa04060.pathview.png)
+![](hsa05323.pathview.png)
+![](hsa05146.pathview.png)
+![](hsa05332.pathview.png)
+![](hsa04640.pathview.png)
+>Q. Can you do the same procedure as above to plot the pathview figures for the top 5 down-reguled pathways?
+
+Let us also observe the top 5 down-regulated genes: 
+
+```{r}
+keggrespathways_down <- rownames(keggres$less)[1:5]
+
+
+keggresids_down = substr(keggrespathways_down, start=1, stop=8)
+
+keggresids_down
+
+```
+
+```{r}
+pathview(gene.data = foldchanges, pathway.id = keggresids_down, species="hsa")
+```
+
+![](hsa04110.pathview.png)
+![](hsa03030.pathview.png)
+![](hsa05130.pathview.png)
+![](hsa03013.pathview.png)
+![](hsa03440.pathview.png)
+
+# Run gene ontology
+
+```{r}
+data(go.sets.hs)
+data(go.subs.hs)
+
+# Let us focus on just the biological processes of GO
+gobpsets = go.sets.hs[go.subs.hs$BP]
+
+gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+
+head(gobpres$less)
+```
+
+
