@@ -1,3 +1,4 @@
 theme: jekyll-theme-minimal
-logo: https://github.com/bioboot/newlabsite/blob/gh-pages/img/logo-2x.png
+baseurl: /bimm143_W25
+logo: /bimm143_W25/assets/img/dna.jpg
 title: Snehita's Bioinformatics Class (BIMM 143, Winter 2025)
