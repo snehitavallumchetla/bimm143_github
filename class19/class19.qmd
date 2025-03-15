@@ -1,0 +1,33 @@
+---
+title: "Class 19: Cancer Mutation Mini Project"
+author: "Snehita Vallumchetla (PID: A16853399)"
+format: html
+---
+
+Let's first read in the file to determine our sequence of interest: 
+```{r}
+library(bio3d)
+
+sequences <- read.fasta('A16853399_mutant_seq.fa')
+```
+
+After performing a blast search of both the WT and Mutant sequences the identity of the protein was determined to be JAK2 (janus kinase 2) 
+
+We can also determine where the mutations are between the two sequences: 
+```{r}
+score = conserv(sequences)
+positions = which(score != 1)
+
+print(positions)
+```
+
+There are 3 positions where the sequences do not align: 
+```{r}
+residues <- sequences$ali[,positions]
+```
+
+
+```{r}
+paste(residues[,1], positions, residues[,2], sep = '')
+```
+
