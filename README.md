@@ -15,7 +15,7 @@ This repository includes my classwork from W25 [BIMM 143](https://bioboot.github
 - **Class13:** [Transcriptomics and the analysis of RNA-Seq data](https://github.com/snehitavallumchetla/bimm143_github/blob/main/class13/lab13.pdf)
 - **Class14:** [RNA-Seq analysis mini-project](https://github.com/snehitavallumchetla/bimm143_github/blob/main/class14/class14.pdf)
 - **Class15:** [Hands-on with Git and GitHub]()
-- **Class17:** [Analyzing sequencing data in the cloud](https://github.com/snehitavallumchetla/bimm143_github/blob/main/class17/class17.pdf)
+- **Class17:** [Analyzing sequencing data in the cloud](https://github.com/snehitavallumchetla/bimm143_github/blob/main/class17/class17lab.pdf)
 - **Class18:** [Mini Project: Investigating Pertussis Resurgence](https://github.com/snehitavallumchetla/bimm143_github/blob/main/class18/class18.pdf)
 - **Class19:** [Mini Project: Cancer Mutation Analysis](https://github.com/snehitavallumchetla/bimm143_github/blob/main/class19/class19.pdf)
 
