@@ -1,4 +1,6 @@
 theme: jekyll-theme-minimal
 logo: https://raw.githubusercontent.com/bioboot/bimm143_W25/gh-pages/assets/img/logo.png
 title: Snehita's Bioinformatics Class (BIMM 143, Winter 2025)
+url: "https://snehitavallumchetla.github.io/bimm143_github/"
+baseurl: "bimm143_github/"
 description: Website of Snehi's Lab Work
